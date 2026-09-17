@@ -1,6 +1,6 @@
 # Usage History
 
-Real Codex usage measurements.
+Actual Codex usage measurements recorded after completed runs.
 
 Use **remaining percentage** for both `5h` and `Weekly`.
 
@@ -8,56 +8,50 @@ Example:
 
 `5h Before: 70%` means **70% remaining**, not 70% used.
 
+> This file stores facts, not predictions.
+
 ---
 
 ## Usage Log
 
 | Date | Repository | Task | Model | Reasoning | 5h Before | 5h After | 5h Cost | Week Before | Week After | Week Cost | Result |
-| ---- | ---------- | ---- | ----- | --------- | --------: | -------: | ------: | ----------: | ---------: | --------: | ------ |
-|      |            |      |       |           |           |          |         |             |            |           |        |
+|---|---|---|---|---|---:|---:|---:|---:|---:|---:|---|
 
 ---
 
-## Example
+## How to add a record
 
-| Date       | Repository                 | Task                    | Model | Reasoning | 5h Before | 5h After | 5h Cost | Week Before | Week After | Week Cost | Result    |
-| ---------- | -------------------------- | ----------------------- | ----- | --------- | --------: | -------: | ------: | ----------: | ---------: | --------: | --------- |
-| 2026-09-17 | danilfg/bank-test-platform | Jenkins access analysis | Sol   | Medium    |       72% |      66% |      6% |         51% |        50% |        1% | ✅ Success |
-| 2026-09-17 | danilfg/bank-test-platform | Jenkins job isolation   | Sol   | Medium    |       66% |      55% |     11% |         50% |        47% |        3% | ✅ Success |
-| 2026-09-17 | danilfg/bank-test-platform | Update focused tests    | Terra | Medium    |       55% |      52% |      3% |         47% |        46% |        1% | ✅ Success |
+Preferred workflow:
 
----
+1. Save `/status` before the coding run.
+2. Run one model/reasoning iteration.
+3. Save `/status` after the run.
+4. Use [`../prompts/history/usage-recorder.md`](../prompts/history/usage-recorder.md).
+5. Let the recorder calculate the actual cost and append one row.
 
-## How to record a task
-
-Before running Codex:
-
-```text
-5h Before: 66%
-Week Before: 50%
-```
-
-After Codex finishes:
-
-```text
-5h After: 55%
-Week After: 47%
-```
-
-Calculate:
-
-```text
-5h Cost = 66 - 55 = 11%
-Week Cost = 50 - 47 = 3%
-```
-
-Then add one row to the table.
+If repository write access is unavailable, the recorder returns a ready-to-paste Markdown row.
 
 ---
 
-## Result
+## One run = one row
 
-Use:
+If the workflow is:
+
+```text
+Sol Medium → could not find root cause
+Astra Medium → found root cause
+Sol Medium → implemented fix
+```
+
+record **three rows**, not one combined measurement.
+
+This is required so future estimates can compare models and reasoning levels accurately.
+
+---
+
+## Result values
+
+Use only:
 
 ```text
 ✅ Success
@@ -65,35 +59,60 @@ Use:
 ❌ Failed
 ```
 
-If the task required another model or another iteration, record it as a **separate row**.
+---
+
+## Reset handling
+
+If a quota reset happens between the BEFORE and AFTER statuses, do not calculate a negative cost.
 
 Example:
 
 ```text
-1. Sol Medium → failed to find root cause
-2. Astra Medium → found root cause
-3. Sol Medium → implementation
+Before: 8% remaining
+After: 96% remaining
 ```
 
-Do not combine these into one measurement.
+Record:
+
+```text
+5h Cost: UNKNOWN — reset occurred
+```
+
+The same rule applies to weekly usage.
 
 ---
 
-## Important
+## Missing data
 
-Do not change historical values later.
+Never estimate missing actual values.
 
-Real measurements are used to improve future estimates.
+If either BEFORE or AFTER is unavailable, keep the known values and record the corresponding cost as `UNKNOWN`.
 
-Over time the planner should be able to learn patterns such as:
+---
 
-```text
-bank-test-platform
-Jenkins / Sol Medium
-Typical cost: 7–12%
+## Illustrative example only
 
-Focused tests / Terra Medium
-Typical cost: 2–4%
+The following row demonstrates the format. It is **not** an actual measurement and must not be copied into the Usage Log unless it really occurred.
+
+```markdown
+| 2026-09-17 | danilfg/bank-test-platform | Jenkins job isolation | Sol | Medium | 66% | 55% | 11% | 50% | 47% | 3% | ✅ Success |
 ```
 
-Only create ranges like these when enough real measurements exist.
+---
+
+## Historical ranges
+
+Only derive ranges after enough comparable real measurements exist.
+
+Compare at least:
+
+- repository;
+- task type;
+- model;
+- reasoning;
+- approximate complexity;
+- testing/debugging scope.
+
+Do not rewrite old measurements to make previous predictions appear more accurate.
+
+> Estimates may be approximate. History must be factual.
