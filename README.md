@@ -6,152 +6,177 @@
 
 # Codex Usage Planner
 
-<p> <img src="https://img.shields.io/badge/Codex-Usage%20Planning-111111?style=flat-square" alt="Codex"> <img src="https://img.shields.io/badge/ChatGPT-Compatible-111111?style=flat-square" alt="ChatGPT"> <img src="https://img.shields.io/badge/AI-Coding-111111?style=flat-square" alt="AI Coding"> <img src="https://img.shields.io/badge/Usage-5h%20%2B%20Weekly-111111?style=flat-square" alt="Usage"> </p>
+<p>
+  <img src="https://img.shields.io/badge/Codex-Usage%20Planning-111111?style=flat-square" alt="Codex">
+  <img src="https://img.shields.io/badge/ChatGPT-Compatible-111111?style=flat-square" alt="ChatGPT">
+  <img src="https://img.shields.io/badge/AI-Coding-111111?style=flat-square" alt="AI Coding">
+  <img src="https://img.shields.io/badge/Usage-5h%20%2B%20Weekly-111111?style=flat-square" alt="Usage">
+</p>
 
 > Know the cost before you code.
 
-**Codex Usage Planner** helps estimate the complexity and expected AI usage of a coding task before you send it to Codex.
+**Codex Usage Planner** is a prompt-based toolkit for planning AI coding tasks before execution and measuring their real usage afterwards.
 
-It helps answer practical questions:
+It helps you answer four practical questions:
 
-* Which model should I use?
-* Which reasoning level is enough?
-* Is my remaining 5-hour usage likely to be enough?
-* How much can this task affect my weekly usage?
-* Should I split the task into smaller iterations?
-* Is a more capable model actually necessary?
-* How can I rewrite the prompt to reduce unnecessary usage?
+- Is this task small enough for the current 5-hour window?
+- How much can it affect the weekly usage budget?
+- Which model and reasoning level should be used?
+- Should the task be split into smaller iterations?
 
-The main idea is simple:
+After the task runs, the project can record the real before/after usage in a history table so future estimates can be based on your own measurements.
 
-> Use the least expensive model and reasoning level that can reliably complete the task.
+> Estimates are heuristic. Actual history is factual.
 
 ---
 
-## Why this project exists
-
-Large AI coding tasks can consume much more usage than expected.
-
-For example, a prompt like:
+## Workflow
 
 ```text
-Refactor Jenkins permissions, Docker configuration and CI/CD.
-Update tests and fix all discovered problems.
+Original task
+    ↓
+Usage Planner
+    ↓
+Model + reasoning + split + optimized prompt
+    ↓
+Run the coding task
+    ↓
+Check /status again
+    ↓
+Usage Recorder
+    ↓
+history/usage-log.md
+    ↓
+Better future estimates
 ```
 
-may cause the coding agent to:
+The project deliberately separates **prediction** from **measurement**:
 
-1. inspect a large part of the repository;
-2. analyze architecture;
-3. modify several subsystems;
-4. run tests;
-5. investigate failures;
-6. make additional changes;
-7. rerun tests;
-8. repeat the process several times.
-
-A single broad task may therefore consume a significant part of a 5-hour or weekly usage limit.
-
-Codex Usage Planner performs a **preflight assessment before execution**.
-
-It does not execute your development task.
-
-It tells you how to run it more efficiently.
+- `usage-planner.md` works **before** execution;
+- `usage-recorder.md` works **after** execution.
 
 ---
 
-## What the planner evaluates
+## Quick start
 
-The planner considers factors such as:
+### 1. Prepare the task
 
-* repository size;
-* expected number of files involved;
-* number of subsystems affected;
-* amount of context required;
-* architecture complexity;
-* debugging complexity;
-* test execution;
-* CI/CD and infrastructure changes;
-* repeated test/fix cycles;
-* external tools;
-* expected number of agent iterations;
-* selected model;
-* reasoning level.
+Use the minimal input template:
 
-It then recommends:
+[`templates/task-input.md`](templates/task-input.md)
 
 ```text
-Task complexity
-      ↓
-5-hour usage risk
-      ↓
-Weekly usage impact
-      ↓
-Recommended model
-      ↓
-Recommended reasoning
-      ↓
-Task decomposition
-      ↓
-Optimized prompt
-```
+STATUS:
+[paste /status]
 
----
-
-## Example
-
-### Input
-
-```text
-5h remaining: 68%
-Weekly remaining: 41%
-
-Repository:
+REPOSITORY:
 https://github.com/example/project
 
-Task:
+Branch:
+main
 
-Refactor Jenkins so every student can only see their own job.
+TASK:
+[paste the original prompt]
 
-Requirements:
-- Jenkins is available only to authorized users;
-- maximum 3 builds can run simultaneously;
-- server resources are limited;
-- existing training scenarios must continue working;
-- update and run tests.
+CONSTRAINTS:
+[optional]
 ```
 
-### Example result
+### 2. Plan before execution
+
+Open:
+
+[`prompts/planning/usage-planner.md`](prompts/planning/usage-planner.md)
+
+The planner returns a compact assessment with:
+
+- task size: `SMALL / MEDIUM / LARGE / HUGE`;
+- 5-hour risk;
+- weekly impact;
+- recommended model;
+- recommended reasoning;
+- task split when needed;
+- escalation rule;
+- optimized ready-to-copy prompt;
+- verdict: `RUN / SPLIT FIRST / WAIT FOR RESET / REDUCE SCOPE`.
+
+### 3. Run the recommended task
+
+Execute the optimized prompt in your coding environment.
+
+For split tasks, record each model execution separately whenever possible.
+
+### 4. Record actual usage
+
+Capture `/status` after the run and use:
+
+[`prompts/history/usage-recorder.md`](prompts/history/usage-recorder.md)
+
+Provide:
+
+```text
+BEFORE:
+[/status before]
+
+AFTER:
+[/status after]
+
+REPOSITORY:
+owner/repository
+
+TASK:
+short task name
+
+MODEL:
+model name
+
+REASONING:
+reasoning level
+
+RESULT:
+Success / Partial / Failed
+```
+
+The recorder calculates the actual cost and appends it to:
+
+[`history/usage-log.md`](history/usage-log.md)
+
+If it cannot edit the repository, it returns a ready-to-paste Markdown row.
+
+---
+
+## Example planner result
 
 ```text
 TASK: LARGE
 
+SCOPE:
+Inspect: ~10–20 files
+Modify: ~4–8 files
+Systems: Jenkins, auth, Docker, tests
+
 5H:
 🟡 RISK
 Expected usage: HIGH
+Remaining: 43%
 
 WEEK:
 🟡 NOTICEABLE
 Expected usage: MEDIUM
+Remaining: 61%
 
 RECOMMENDED:
 Model: Sol
 Reasoning: Medium
 
-WHY:
-The task affects permissions, infrastructure and tests.
-It should not be executed as one large agent run.
+PLAN:
+1. Analyze Jenkins/auth scope → Sol / Medium
+2. Implement job isolation → Sol / Medium
+3. Add concurrency limits → Terra / Medium
+4. Focused tests → Terra / Medium
 
-SPLIT:
-
-1. Analyze Jenkins permissions → Sol Medium
-2. Implement job isolation → Sol Medium
-3. Add concurrency limits → Terra Medium
-4. Update tests → Terra Medium
-5. Documentation / cleanup → Luna
-
-ESCALATION:
-Use Astra only if Sol cannot identify the root cause of a complex issue.
+ESCALATE:
+Use a stronger model only if focused investigation cannot resolve the architecture or root cause.
 
 VERDICT:
 ⚠️ SPLIT FIRST
@@ -169,13 +194,15 @@ codex-usage-planner/
 │
 ├── prompts/
 │   ├── README.md
-│   └── planning/
-│       └── usage-planner.md
+│   ├── README.ru.md
+│   ├── planning/
+│   │   └── usage-planner.md
+│   └── history/
+│       └── usage-recorder.md
 │
 ├── templates/
-│   └── task-input.md
-│
-├── examples/
+│   ├── task-input.md
+│   └── task-input.ru.md
 │
 └── history/
     └── usage-log.md
@@ -183,381 +210,121 @@ codex-usage-planner/
 
 ---
 
-## Files
+## Main files
 
-### `README.md`
+| File | Purpose |
+|---|---|
+| [`prompts/planning/usage-planner.md`](prompts/planning/usage-planner.md) | Preflight estimate before execution |
+| [`prompts/history/usage-recorder.md`](prompts/history/usage-recorder.md) | Record actual before/after usage |
+| [`templates/task-input.md`](templates/task-input.md) | Minimal task input template |
+| [`history/usage-log.md`](history/usage-log.md) | Factual historical measurements |
+| [`AGENTS.md`](AGENTS.md) | Repository rules for coding agents |
 
-English documentation.
-
-This is the default README displayed by GitHub.
-
-### `README.ru.md`
-
-Russian documentation.
-
-### `AGENTS.md`
-
-Instructions for Codex when working inside this repository.
-
-It explains that submitted development tasks must be **analyzed, not executed**.
-
-### `prompts/planning/usage-planner.md`
-
-The main planner prompt.
-
-This is the primary file you use to evaluate a coding task.
-
-### `prompts/README.md`
-
-Index and description of available prompts.
-
-### `templates/task-input.md`
-
-Reusable input template for new assessments.
-
-### `examples/`
-
-Real examples of planner usage.
-
-### `history/usage-log.md`
-
-Actual usage measurements collected after running tasks.
+See the full prompt index in [`prompts/README.md`](prompts/README.md).
 
 ---
 
-## How to use
+## Estimation principles
 
-### 1. Check your current usage
+The planner should prefer the **least expensive model and reasoning level that can reliably complete the task**.
 
-Copy your current usage information.
+Usage risk usually increases with:
 
-For example:
+- repository exploration;
+- number of affected modules;
+- architecture work;
+- debugging uncertainty;
+- infrastructure and CI/CD changes;
+- repeated test/fix cycles;
+- large context;
+- long autonomous runs.
 
-```text
-5h remaining: 68%
-5h reset: 2h 40m
+Usage can often be reduced by:
 
-Weekly remaining: 41%
-Weekly reset: 3d 12h
-```
-
-If available in your Codex environment, you can also paste the complete output of:
-
-```text
-/status
-```
-
----
-
-### 2. Open the main prompt
-
-```text
-prompts/planning/usage-planner.md
-```
+- limiting scope to relevant files/directories;
+- separating analysis from implementation;
+- splitting large tasks into independently testable iterations;
+- running focused tests first;
+- forbidding unrelated refactoring;
+- adding explicit stopping conditions.
 
 ---
 
-### 3. Add your data
+## Model and reasoning strategy
 
-Fill in:
+Available model names can change over time, so the planner uses both model names and capability classes.
+
+General strategy:
+
+| Capability | Typical use |
+|---|---|
+| Lightweight | Mechanical edits, docs, repetitive changes |
+| Standard | Clear implementation and focused tests |
+| Strong | Main development, refactoring and debugging |
+| Advanced | Difficult architecture and root-cause analysis |
+
+The strongest model should usually be an **escalation path**, not the default.
+
+The same principle applies to reasoning:
 
 ```text
-STATUS:
-
-5h remaining:
-5h reset:
-
-Weekly remaining:
-Weekly reset:
-
-REPOSITORY:
-
-URL:
-Branch:
-
-TASK:
-
-[Paste your original Codex prompt here]
+Low / Light → Medium → High
 ```
 
-Do not optimize the prompt yourself first.
-
-Paste the task exactly as you originally intended to send it.
-
-The planner should identify unnecessary scope and optimize it for you.
+A large but straightforward task is often better handled as several `Medium` iterations than one `High` run.
 
 ---
 
-## Recommended workflow
+## Historical measurements
 
-Instead of:
+`history/usage-log.md` stores actual measurements, not predictions.
 
-```text
-Huge task
-   ↓
-Strongest model
-   ↓
-High reasoning
-   ↓
-Entire repository
-   ↓
-Many iterations
-   ↓
-Usage exhausted
-```
+Rules:
 
-prefer:
+- one model execution = one history row;
+- never invent missing values;
+- never rewrite old measurements to improve past predictions;
+- detect quota resets instead of calculating negative cost;
+- prefer historical ranges only after enough comparable runs exist.
 
-```text
-Original task
-      ↓
-Codex Usage Planner
-      ↓
-Scope assessment
-      ↓
-Task decomposition
-      ↓
-Appropriate model
-      ↓
-Appropriate reasoning
-      ↓
-Focused execution
-```
+Over time this can make recommendations specific to your real workflow and repositories.
 
 ---
 
-## Model strategy
+## Current status
 
-The exact available models may change over time, so model recommendations should follow capabilities rather than blindly relying on names.
+### v0.1 — Prompt workflow
 
-A typical strategy is:
-
-| Model class | Typical use                                            |
-| ----------- | ------------------------------------------------------ |
-| Lightweight | Mechanical edits, docs, simple repetitive changes      |
-| Standard    | Clear implementation tasks and focused testing         |
-| Strong      | Main development, refactoring and debugging            |
-| Advanced    | Difficult architecture and complex root-cause analysis |
-
-The strongest model should normally be an **escalation path**, not the default choice.
-
----
-
-## Reasoning strategy
-
-Use the lowest reasoning level that is likely to solve the task reliably.
-
-```text
-Low
- ↓
-Medium
- ↓
-High
-```
-
-Typical usage:
-
-### Low
-
-Good for:
-
-* mechanical edits;
-* formatting;
-* simple documentation;
-* obvious localized changes.
-
-### Medium
-
-Good for:
-
-* normal development;
-* refactoring;
-* debugging;
-* test implementation;
-* focused repository analysis.
-
-### High
-
-Use when necessary for:
-
-* difficult architecture;
-* complex cross-module reasoning;
-* difficult root-cause analysis;
-* problems that Medium reasoning failed to solve.
+- [x] Task complexity assessment
+- [x] 5-hour usage risk assessment
+- [x] Weekly usage impact assessment
+- [x] Model recommendation
+- [x] Reasoning recommendation
+- [x] Task decomposition
+- [x] Prompt optimization
+- [x] Raw `/status` interpretation inside prompts
+- [x] Post-run usage recorder
+- [x] Factual usage history
+- [x] EN / RU task templates
+- [ ] Automatic `/status` capture
+- [ ] Automatic repository scope scanner
+- [ ] Historical prediction engine
+- [ ] CLI
+- [ ] VS Code / Codex integration
+- [ ] Usage dashboard
 
 ---
 
-## Task splitting
+## Important limitation
 
-A task should usually be split when it mixes several kinds of work.
+Codex Usage Planner is **not an official OpenAI quota calculator** and cannot know the exact cost of a future agent run from the prompt alone.
 
-For example:
-
-```text
-Analyze architecture
-+
-Change authentication
-+
-Modify infrastructure
-+
-Update CI/CD
-+
-Write tests
-+
-Run regression
-```
-
-is usually better transformed into:
-
-```text
-1. Analysis
-2. Authentication
-3. Infrastructure
-4. Tests
-5. Regression
-```
-
-Each iteration should ideally:
-
-* have one primary objective;
-* have a limited scope;
-* be independently testable;
-* have a clear stopping condition.
-
----
-
-## Prompt optimization
-
-The planner can rewrite a broad prompt such as:
-
-```text
-Analyze the project and refactor Jenkins.
-Fix everything related to permissions and tests.
-```
-
-into something more focused:
-
-```text
-Work only with Jenkins authorization and job visibility.
-
-First inspect:
-- deploy/jenkins/
-- docker-compose.yml
-- related authentication configuration
-- Jenkins-specific tests
-
-Goal:
-Each authorized student must only see their own job.
-
-Do not:
-- refactor unrelated application code;
-- modify unrelated services;
-- inspect the entire repository unless necessary.
-
-After implementation:
-1. run Jenkins-related tests;
-2. fix failures caused by this change;
-3. stop after those tests pass.
-
-Do not perform unrelated cleanup.
-```
-
-A smaller scope usually means less unnecessary context and fewer agent iterations.
-
----
-
-## Usage history
-
-After completing a task, record the real usage in:
-
-```text
-history/usage-log.md
-```
-
-Example:
-
-```text
-| Date | Repository | Task | Model | Reasoning | 5h Before | 5h After | Cost |
-|---|---|---|---|---|---:|---:|---:|
-| 2026-09-17 | example/project | Jenkins analysis | Sol | Medium | 72% | 66% | 6% |
-```
-
-This is important because real usage depends heavily on the actual workflow.
-
-After enough real tasks, the planner can eventually estimate costs based on historical data such as:
-
-```text
-Large Django refactor + Medium reasoning
-Typical historical cost: 8–13%
-
-Focused test update
-Typical historical cost: 2–4%
-
-Complex architecture investigation
-Typical historical cost: 15–25%
-```
-
-These values should come from actual measurements, not invented assumptions.
-
----
-
-## Current version
-
-### v0.1 — Prompt-based planner
-
-* [x] Task complexity assessment
-* [x] 5-hour usage risk
-* [x] Weekly usage risk
-* [x] Model recommendation
-* [x] Reasoning recommendation
-* [x] Task decomposition
-* [x] Prompt optimization
-* [x] Manual usage history
-* [ ] Automatic `/status` parsing
-* [ ] Automatic repository scope analysis
-* [ ] Historical usage prediction
-* [ ] CLI
-* [ ] VS Code integration
-* [ ] Codex integration
-* [ ] Usage dashboard
-
----
-
-## Future CLI
-
-A future version could work like this:
-
-```bash
-codex-usage-plan "Refactor Jenkins permissions"
-```
-
-and return:
-
-```text
-🟡 LARGE
-
-Recommended:
-Sol / Medium
-
-5h impact:
-Medium
-
-Weekly impact:
-Low–Medium
-
-Split:
-3 iterations
-
-Advanced model:
-Not required initially
-```
+Before enough historical data exists, it intentionally uses qualitative risk (`LOW / MEDIUM / HIGH`) or clearly marked approximate ranges instead of false precision.
 
 ---
 
 ## Philosophy
 
-Codex Usage Planner is not about avoiding powerful models.
+Powerful models are useful. The goal is not to avoid them, but to spend expensive reasoning where it produces real value.
 
-It is about using expensive reasoning **where it actually provides value**.
-
-> Plan first. Spend reasoning where it matters.
+> Plan first. Measure after. Improve with data.
