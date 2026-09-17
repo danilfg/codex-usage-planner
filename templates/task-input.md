@@ -64,3 +64,5 @@ CONSTRAINTS:
 - Do not perform unrelated refactoring.
 - Keep the existing Docker setup working.
 ```
+
+After the coding run, capture `/status` again and use [`../prompts/history/usage-recorder.md`](../prompts/history/usage-recorder.md) to record the actual cost.
