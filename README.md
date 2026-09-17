@@ -6,6 +6,8 @@
 
 # Codex Usage Planner
 
+<p> <img src="https://img.shields.io/badge/Codex-Usage%20Planning-111111?style=flat-square" alt="Codex"> <img src="https://img.shields.io/badge/ChatGPT-Compatible-111111?style=flat-square" alt="ChatGPT"> <img src="https://img.shields.io/badge/AI-Coding-111111?style=flat-square" alt="AI Coding"> <img src="https://img.shields.io/badge/Usage-5h%20%2B%20Weekly-111111?style=flat-square" alt="Usage"> </p>
+
 > Know the cost before you code.
 
 **Codex Usage Planner** helps estimate the complexity and expected AI usage of a coding task before you send it to Codex.
