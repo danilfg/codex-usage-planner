@@ -2,47 +2,76 @@
 
 ## Project purpose
 
-`codex-usage-planner` is a prompt-based toolkit for estimating AI coding task complexity and expected usage before execution.
+`codex-usage-planner` is a prompt-based toolkit for two related workflows:
 
-The project helps users decide:
+1. **Preflight planning** before an AI coding task is executed.
+2. **Post-run measurement** after the task is completed.
 
-* which model to use;
-* which reasoning level to use;
-* whether the remaining 5-hour quota is likely to be enough;
-* how much a task may affect weekly usage;
-* whether a task should be split into smaller iterations;
-* how to reduce unnecessary repository exploration and context usage;
-* when escalation to a stronger model is justified.
+The project helps users:
 
-The project is a **planner**, not a coding agent for the submitted target task.
+- estimate task complexity;
+- assess 5-hour and weekly usage risk;
+- choose an appropriate model and reasoning level;
+- split large tasks into smaller iterations;
+- optimize prompts to reduce unnecessary scope and context;
+- record actual before/after usage;
+- use real history to improve future estimates.
+
+The project does **not** execute the submitted target development task.
 
 ---
 
-## Critical rule
+## Core workflow
 
-When a user provides a development task for analysis:
+```text
+TASK
+  ↓
+prompts/planning/usage-planner.md
+  ↓
+PLAN / MODEL / REASONING / OPTIMIZED PROMPT
+  ↓
+USER RUNS THE TARGET TASK
+  ↓
+BEFORE + AFTER /status
+  ↓
+prompts/history/usage-recorder.md
+  ↓
+history/usage-log.md
+```
 
-**DO NOT execute that development task.**
+Keep prediction and measurement separate.
+
+- Planner output may be approximate.
+- History must remain factual.
+
+---
+
+## Critical rule for target repositories
+
+When a user provides a development task for **planning or estimation**:
+
+**DO NOT execute that target development task.**
 
 Do not:
 
-* modify the target repository;
-* implement the requested feature;
-* fix the requested bug;
-* refactor the target project;
-* create commits in the target repository;
-* run destructive commands against the target repository.
+- modify the target repository;
+- implement the requested feature;
+- fix the requested bug;
+- refactor the target project;
+- create commits in the target repository;
+- run destructive commands against the target repository.
 
 Instead:
 
 1. analyze the task;
-2. estimate its scope and complexity;
-3. estimate usage risk;
-4. recommend a model;
-5. recommend a reasoning level;
-6. split the task when appropriate;
-7. optimize the original prompt;
-8. provide a clear execution strategy.
+2. estimate scope and complexity;
+3. assess usage risk;
+4. recommend model and reasoning;
+5. split the task when appropriate;
+6. optimize the original prompt;
+7. provide a concise execution strategy.
+
+This restriction does **not** prevent `usage-recorder.md` from updating this repository's own `history/usage-log.md` when write access is available.
 
 ---
 
@@ -56,69 +85,25 @@ codex-usage-planner/
 │
 ├── prompts/
 │   ├── README.md
-│   └── planning/
-│       └── usage-planner.md
+│   ├── README.ru.md
+│   ├── planning/
+│   │   └── usage-planner.md
+│   └── history/
+│       └── usage-recorder.md
 │
 ├── templates/
-│   └── task-input.md
+│   ├── task-input.md
+│   └── task-input.ru.md
 │
-├── history/
-│   └── usage-log.md
-│
-├── examples/
-│   └── README.md
-│
-└── docs/
-    └── models.md
+└── history/
+    └── usage-log.md
 ```
 
-### `README.md`
+### `prompts/planning/usage-planner.md`
 
-Primary project documentation in English.
+Runs before execution.
 
-English is the default repository language.
-
-### `README.ru.md`
-
-Russian translation of the main documentation.
-
-### `prompts/`
-
-Reusable prompts.
-
-Each prompt should solve one clear problem.
-
-### `templates/`
-
-Reusable input/output templates.
-
-### `history/`
-
-Real usage measurements from completed tasks.
-
-Historical measurements must be treated as more valuable than generic assumptions.
-
-### `examples/`
-
-Real examples of planner usage.
-
-Prefer real measured examples over invented examples.
-
-### `docs/`
-
-Supporting documentation, methodology and model guidance.
-
----
-
-## Main prompt
-
-The primary planner prompt is:
-
-```text
-prompts/planning/usage-planner.md
-```
-
-Its job is to transform:
+Transforms:
 
 ```text
 current usage
@@ -131,167 +116,165 @@ original coding task
 into:
 
 ```text
-task complexity
+complexity
 +
-5-hour usage risk
+5h risk
 +
-weekly usage impact
+weekly impact
 +
 recommended model
 +
 recommended reasoning
 +
-task decomposition
+task split
 +
 optimized prompt
 +
-execution verdict
+verdict
 ```
 
----
+### `prompts/history/usage-recorder.md`
 
-## General planning principles
+Runs after execution.
 
-### Prefer efficient execution
+Transforms:
 
-Recommend the least expensive model and reasoning level that can reliably complete the task.
+```text
+before status
++
+after status
++
+repository
++
+task
++
+model
++
+reasoning
++
+result
+```
 
-Do not automatically recommend the strongest available model.
+into a factual row in:
 
-A stronger model should normally be used as an **escalation path**.
+```text
+history/usage-log.md
+```
 
----
+### `history/usage-log.md`
 
-## Factors that increase expected usage
+Contains actual measurements only.
 
-Consider the task more expensive when it requires:
-
-* reading a large part of a repository;
-* many files;
-* multiple services or modules;
-* architecture analysis;
-* unfamiliar code;
-* cross-module behavior;
-* infrastructure changes;
-* CI/CD changes;
-* database migrations;
-* external integrations;
-* repeated test/fix cycles;
-* broad regression testing;
-* difficult debugging;
-* root-cause analysis;
-* multiple tool calls;
-* large generated output;
-* long-running autonomous work.
+Never treat example values as real observations.
 
 ---
 
-## Factors that reduce expected usage
+## Planning principles
 
-A task is usually cheaper when:
+Prefer the least expensive model and reasoning level that can reliably complete the task.
 
-* scope is limited to known files or directories;
-* one subsystem is involved;
-* expected behavior is clearly defined;
-* implementation steps are already known;
-* unrelated refactoring is explicitly forbidden;
-* focused tests are specified;
-* stopping conditions are defined;
-* analysis and implementation are separated;
-* unnecessary repository exploration is avoided.
+Do not automatically recommend the strongest model or highest reasoning level.
+
+A stronger model should normally be an **escalation path**.
+
+### Usage usually increases with
+
+- large repository exploration;
+- many affected files or modules;
+- architecture work;
+- unfamiliar code;
+- cross-module behavior;
+- infrastructure or CI/CD changes;
+- database migrations;
+- external integrations;
+- difficult debugging;
+- repeated test/fix cycles;
+- broad regression runs;
+- many tool calls;
+- large context;
+- long autonomous execution;
+- vague instructions such as `fix everything`.
+
+### Usage can often be reduced by
+
+- limiting scope to known files/directories;
+- separating analysis from implementation;
+- splitting large work into independently testable iterations;
+- forbidding unrelated refactoring;
+- using focused tests first;
+- adding explicit stopping conditions;
+- avoiding whole-repository exploration unless required.
 
 ---
 
 ## Complexity levels
 
-Use these classifications:
+Use:
+
+```text
+SMALL
+MEDIUM
+LARGE
+HUGE
+```
 
 ### SMALL
 
-Typical characteristics:
-
-* isolated change;
-* few files;
-* known implementation;
-* little investigation;
-* focused tests.
+- isolated change;
+- few files;
+- little investigation;
+- focused tests.
 
 ### MEDIUM
 
-Typical characteristics:
-
-* several files;
-* one main subsystem;
-* some investigation;
-* implementation plus tests;
-* limited debugging.
+- several files;
+- one main subsystem;
+- some investigation;
+- implementation plus tests.
 
 ### LARGE
 
-Typical characteristics:
-
-* multiple modules;
-* significant refactoring;
-* integration work;
-* infrastructure or CI changes;
-* substantial debugging;
-* several test/fix iterations.
+- multiple modules;
+- significant refactoring or integration work;
+- infrastructure/CI impact;
+- several test/fix iterations.
 
 ### HUGE
 
-Typical characteristics:
-
-* several subsystems;
-* broad architectural changes;
-* application + infrastructure + tests;
-* potentially large repository exploration;
-* many autonomous iterations;
-* high probability of consuming a large portion of an available usage window.
+- several subsystems;
+- broad architecture work;
+- application + infrastructure + tests;
+- large repository exploration;
+- many autonomous iterations;
+- unsuitable for one reliable run.
 
 ---
 
 ## Reasoning guidance
 
-Prefer the lowest reasoning level likely to solve the problem reliably.
+Prefer the lowest reasoning level likely to solve the task reliably.
 
-### Low
+### Low / Light
 
-Use for:
-
-* mechanical changes;
-* documentation;
-* formatting;
-* repetitive edits;
-* obvious local changes.
+Use for mechanical, repetitive, formatting, documentation, or obvious local changes.
 
 ### Medium
 
-Default for:
-
-* normal development;
-* refactoring;
-* debugging;
-* writing tests;
-* focused repository analysis.
+Default for normal development, refactoring, debugging, test work, and focused repository analysis.
 
 ### High
 
-Reserve for:
+Reserve for difficult architecture, ambiguous cross-module behavior, hard root-cause analysis, or cases where Medium failed.
 
-* difficult architecture;
-* ambiguous cross-module behavior;
-* complex root-cause analysis;
-* problems where Medium reasoning already failed.
+Do not use High merely because a task is large. A large but straightforward task may be better as several Medium iterations.
 
 ---
 
 ## Usage estimation rules
 
-Never pretend that usage can be predicted exactly.
+Never present future usage as exact unless supported by enough comparable historical measurements.
 
-Do not invent precise percentages without supporting data.
-
-If there is not enough historical evidence, use:
+When evidence is weak, prefer:
 
 ```text
 LOW
@@ -301,106 +284,103 @@ HIGH
 
 or a clearly labeled approximate range.
 
-Always distinguish between:
+Always distinguish:
 
-* 5-hour usage;
-* weekly usage.
+- current 5-hour usage;
+- weekly usage.
 
-If current quota information is missing, say that current exhaustion risk cannot be determined.
+If current quota information is missing, task complexity may still be assessed, but exhaustion risk must be marked unknown.
 
-Task complexity can still be assessed.
+Codex Usage Planner is not an official quota calculator.
 
 ---
 
-## Historical data
+## Historical data rules
 
-Actual measurements should be recorded in:
+Actual measurements live in:
 
 ```text
 history/usage-log.md
 ```
 
-When historical data becomes available:
+Rules:
 
-1. prefer comparable tasks from history;
-2. compare repository type;
-3. compare model;
-4. compare reasoning level;
-5. compare task complexity;
-6. compare number of iterations;
-7. use historical ranges to improve future estimates.
+1. One model execution = one row.
+2. Never invent missing before/after values.
+3. Distinguish `used` from `remaining`.
+4. Detect quota resets instead of calculating negative cost.
+5. Never rewrite historical measurements to improve old predictions.
+6. Prefer several comparable measurements before producing a historical range.
+7. If repository write access is unavailable, return a ready-to-paste row rather than pretending the history was updated.
 
-Never modify historical measurements merely to make previous predictions appear more accurate.
+When using history for planning, compare:
+
+- repository;
+- task type;
+- model;
+- reasoning;
+- complexity;
+- affected scope;
+- testing scope.
 
 ---
 
 ## Task decomposition
 
-Recommend splitting when a task mixes several kinds of work.
-
-Bad single task:
+Recommend splitting when the task mixes several kinds of work, especially:
 
 ```text
-Analyze architecture,
-change authentication,
-modify Docker,
-update CI,
-write tests,
-run regression,
-fix everything.
-```
-
-Prefer:
-
-```text
-1. Architecture analysis
-2. Authentication changes
-3. Infrastructure changes
-4. Tests
-5. Regression
+analysis
++
+architecture
++
+implementation
++
+infrastructure
++
+tests
++
+regression
 ```
 
 Each iteration should ideally have:
 
-* one main objective;
-* limited scope;
-* independent validation;
-* explicit completion criteria.
+- one main objective;
+- limited scope;
+- independent validation;
+- explicit completion criteria;
+- a stopping condition.
 
 ---
 
 ## Prompt optimization rules
 
-When optimizing the user's original coding prompt:
+Preserve:
 
-### Preserve
+- functional requirements;
+- constraints;
+- acceptance criteria;
+- required tests;
+- safety requirements.
 
-* functional requirements;
-* important constraints;
-* acceptance criteria;
-* safety requirements;
-* required tests.
+Reduce or constrain:
 
-### Reduce
+- whole-repository exploration;
+- unrelated refactoring;
+- broad cleanup;
+- duplicated work;
+- vague requests such as `fix everything`;
+- unnecessary repeated full regression.
 
-* unnecessary repository exploration;
-* unrelated refactoring;
-* broad cleanup;
-* duplicated work;
-* vague requests such as "fix everything";
-* unnecessary full regression runs.
+Add when useful:
 
-### Add when useful
+- relevant directories/files;
+- forbidden scope;
+- focused tests;
+- stopping conditions;
+- escalation conditions.
 
-* relevant directories;
-* relevant files;
-* explicit scope;
-* forbidden scope;
-* focused tests;
-* stopping conditions;
-* escalation conditions.
-
-Do not optimize a prompt by silently removing important requirements.
+Never silently remove important requirements to make a prompt look cheaper.
 
 ---
 
@@ -412,35 +392,43 @@ Use:
 one purpose = one prompt file
 ```
 
-Examples:
+Current implemented prompts:
 
 ```text
-usage estimation    → usage-planner.md
-model selection     → model-selector.md
-task decomposition  → task-splitter.md
-prompt optimization → prompt-optimizer.md
-context reduction   → context-optimizer.md
-repository scope    → repo-estimator.md
-preflight decision  → preflight-check.md
+planning/usage-planner.md  → preflight prediction
+history/usage-recorder.md  → post-run measurement
 ```
 
-Do not turn `usage-planner.md` into a giant collection of unrelated tools.
+Possible future prompts:
+
+```text
+planning/model-selector.md
+planning/task-splitter.md
+optimization/prompt-optimizer.md
+optimization/context-optimizer.md
+analysis/repo-estimator.md
+analysis/preflight-check.md
+```
+
+Do not turn `usage-planner.md` into a monolithic collection of unrelated tools.
 
 ---
 
 ## Language
 
-Project documentation may have English and Russian versions.
+English is the primary/default documentation language.
 
-English is the primary/default language.
+Human-facing documentation may have EN and RU versions.
 
-Prompt internals should normally remain in English unless there is a clear reason to provide a localized version.
+Prompt internals should normally remain in English unless there is a clear reason to localize them.
 
-When maintaining translated documentation:
+When maintaining translations:
 
-* keep structure aligned;
-* keep technical meaning identical;
-* do not allow one language version to contain materially different rules.
+- keep structure aligned;
+- keep technical meaning equivalent;
+- avoid materially different rules between languages.
+
+`AGENTS.md` remains English-only.
 
 ---
 
@@ -448,36 +436,35 @@ When maintaining translated documentation:
 
 When modifying this repository:
 
-1. keep prompts concise where possible;
+1. keep prompts focused and concise where possible;
 2. avoid duplicated instructions;
 3. prefer explicit rules over vague wording;
-4. keep examples realistic;
-5. do not add unsupported claims about OpenAI limits;
-6. do not hardcode temporary model assumptions into multiple files;
-7. place model-specific guidance in documentation when possible;
-8. preserve compatibility with plain Markdown and GitHub rendering.
+4. keep examples clearly labeled as examples;
+5. do not add unsupported claims about exact quota cost;
+6. avoid scattering temporary model assumptions across many files;
+7. preserve GitHub-compatible Markdown;
+8. update README files when the public workflow changes;
+9. update `prompts/README.md` and `prompts/README.ru.md` when prompts are added or removed.
 
 ---
 
 ## Current development priority
 
-The current priority is a reliable prompt-based v0.1.
-
-Do not introduce unnecessary application architecture yet.
+Validate the prompt workflow and collect real measurements before adding unnecessary application architecture.
 
 Prefer:
 
 ```text
-prompts
+planner
 +
-templates
+recorder
 +
-history
+minimal templates
 +
-real usage data
+real history
 ```
 
-before building:
+before:
 
 ```text
 CLI
@@ -488,10 +475,8 @@ browser extension
 VS Code extension
 ```
 
-Automation should be added only after the prompt workflow has been validated with real usage data.
-
 ---
 
 ## Core principle
 
-> Plan first. Spend reasoning where it matters.
+> Plan first. Measure after. Improve with data.
