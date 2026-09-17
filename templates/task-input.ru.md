@@ -64,3 +64,5 @@ CONSTRAINTS:
 - Не делать несвязанный рефакторинг.
 - Сохранить работоспособность текущего Docker-окружения.
 ```
+
+После coding run снова получи `/status` и используй [`../prompts/history/usage-recorder.md`](../prompts/history/usage-recorder.md), чтобы записать фактический расход.
