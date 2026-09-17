@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/badge/ChatGPT-Compatible-111111?style=flat-square" alt="ChatGPT">
   <img src="https://img.shields.io/badge/AI-Coding-111111?style=flat-square" alt="AI Coding">
   <img src="https://img.shields.io/badge/Usage-5h%20%2B%20Weekly-111111?style=flat-square" alt="Usage">
+  <img src="https://img.shields.io/github/v/release/danilfg/codex-usage-planner?style=flat-square" alt="GitHub Release">
 </p>
 
 > Узнай стоимость задачи до того, как потратишь лимит.
